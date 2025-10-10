@@ -1687,6 +1687,118 @@ function Labs:AddDropdown(tab, config)
         end,
         GetValue = function()
             return dropdownSettings.Multi and selected or selected[1]
+        end,
+        UpdateItems = function(newItems)
+            
+            for _, child in ipairs(menuScroll:GetChildren()) do
+                if child:IsA("TextButton") then
+                    child:Destroy()
+                end
+            end
+            
+            dropdownSettings.Items = newItems
+            choices = {}
+            
+            
+            for _, itemName in ipairs(newItems) do
+                local choiceButton = Instance.new("TextButton")
+                choiceButton.Size = UDim2.new(1, 0, 0, 30)
+                choiceButton.BackgroundColor3 = currentColors.CARD
+                choiceButton.BackgroundTransparency = 0.5
+                choiceButton.BorderSizePixel = 0
+                choiceButton.Text = ""
+                choiceButton.AutoButtonColor = false
+                choiceButton.ZIndex = 502
+                choiceButton.Parent = menuScroll
+                
+                local choiceCorner = Instance.new("UICorner")
+                choiceCorner.CornerRadius = UDim.new(0, 6)
+                choiceCorner.Parent = choiceButton
+                
+                local checkBox = Instance.new("Frame")
+                checkBox.Size = UDim2.new(0, 16, 0, 16)
+                checkBox.Position = UDim2.new(0, 8, 0.5, 0)
+                checkBox.AnchorPoint = Vector2.new(0, 0.5)
+                checkBox.BackgroundColor3 = currentColors.SURFACE
+                checkBox.BorderSizePixel = 0
+                checkBox.ZIndex = 503
+                checkBox.Parent = choiceButton
+                
+                local checkboxCorner = Instance.new("UICorner")
+                checkboxCorner.CornerRadius = UDim.new(0, dropdownSettings.Multi and 4 or 8)
+                checkboxCorner.Parent = checkBox
+                
+                local checkMark = Instance.new("TextLabel")
+                checkMark.Size = UDim2.new(1, 0, 1, 0)
+                checkMark.BackgroundTransparency = 1
+                checkMark.Text = "✓"
+                checkMark.TextColor3 = currentColors.TEXT_PRIMARY
+                checkMark.Font = Enum.Font.GothamBold
+                checkMark.TextSize = 12
+                checkMark.Visible = false
+                checkMark.ZIndex = 504
+                checkMark.Parent = checkBox
+                
+                local choiceLabel = Instance.new("TextLabel")
+                choiceLabel.Size = UDim2.new(1, -36, 1, 0)
+                choiceLabel.Position = UDim2.new(0, 30, 0, 0)
+                choiceLabel.BackgroundTransparency = 1
+                choiceLabel.Text = itemName
+                choiceLabel.TextColor3 = currentColors.TEXT_SECONDARY
+                choiceLabel.Font = Enum.Font.Gotham
+                choiceLabel.TextSize = 11
+                choiceLabel.TextXAlignment = Enum.TextXAlignment.Left
+                choiceLabel.ZIndex = 502
+                choiceLabel.Parent = choiceButton
+                
+                table.insert(choices, {
+                    name = itemName,
+                    button = choiceButton,
+                    checkbox = checkBox,
+                    checkmark = checkMark,
+                    label = choiceLabel
+                })
+                
+                choiceButton.MouseEnter:Connect(function()
+                    animate(choiceButton, {BackgroundTransparency = 0.2}, 0.15)
+                end)
+                
+                choiceButton.MouseLeave:Connect(function()
+                    animate(choiceButton, {BackgroundTransparency = 0.5}, 0.15)
+                end)
+                
+                choiceButton.MouseButton1Click:Connect(function()
+                    if dropdownSettings.Multi then
+                        local wasSelected = false
+                        for i, sel in ipairs(selected) do
+                            if sel == itemName then
+                                table.remove(selected, i)
+                                wasSelected = true
+                                break
+                            end
+                        end
+                        
+                        if not wasSelected then
+                            table.insert(selected, itemName)
+                        end
+                    else
+                        selected = {itemName}
+                        toggleMenu()
+                    end
+                    
+                    refreshChoices()
+                    updateText()
+                    
+                    if dropdownSettings.Multi then
+                        pcall(dropdownSettings.Callback, selected)
+                    else
+                        pcall(dropdownSettings.Callback, selected[1])
+                    end
+                end)
+            end
+            
+            refreshChoices()
+            updateText()
         end
     }
 end
