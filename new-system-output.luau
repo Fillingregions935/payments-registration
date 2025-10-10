@@ -854,7 +854,40 @@ function Labs:CreateWindow(config)
         CurrentTab = nil
     }
     
+    local hideKeybind = "LeftControl"
+    local guiVisible = true
+    
+    local function toggleVisibility()
+        guiVisible = not guiVisible
+        mainFrame.Visible = guiVisible
+    end
+    
+    local hideKeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        if input.KeyCode.Name == hideKeybind then
+            toggleVisibility()
+        end
+    end)
+    
+    screenGui.Destroying:Connect(function()
+        if hideKeybindConnection then
+            hideKeybindConnection:Disconnect()
+        end
+    end)
+    
     table.insert(Labs.Windows, Window)
+    
+    Window.SetHideKeybind = function(newKey)
+        hideKeybind = newKey
+    end
+    
+    Window.GetHideKeybind = function()
+        return hideKeybind
+    end
+    
+    Window.ToggleVisibility = toggleVisibility
+    
     return Window
 end
 
