@@ -876,8 +876,6 @@ function Labs:CreateWindow(config)
         end
     end)
     
-    table.insert(Labs.Windows, Window)
-    
     Window.SetHideKeybind = function(newKey)
         hideKeybind = newKey
     end
@@ -887,6 +885,8 @@ function Labs:CreateWindow(config)
     end
     
     Window.ToggleVisibility = toggleVisibility
+    
+    table.insert(Labs.Windows, Window)
     
     return Window
 end
