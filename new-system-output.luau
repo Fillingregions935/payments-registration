@@ -134,11 +134,16 @@ function Labs:SaveConfig(config, silent)
         local fullPath = Labs.ConfigFolder .. "/" .. Labs.ConfigFile
         local jsonData = HttpService:JSONEncode(config)
         
+        print("[Labs Config] Tentando salvar em:", fullPath)
+        print("[Labs Config] Dados:", jsonData)
+        
         if not isfolder(Labs.ConfigFolder) then
             makefolder(Labs.ConfigFolder)
+            print("[Labs Config] Pasta criada:", Labs.ConfigFolder)
         end
         
         writefile(fullPath, jsonData)
+        print("[Labs Config] ✅ Arquivo salvo com sucesso!")
         return true
     end)
     
@@ -153,6 +158,7 @@ function Labs:SaveConfig(config, silent)
         end
         return true
     else
+        print("[Labs Config] ❌ Erro ao salvar:", tostring(result))
         if not silent then
             Labs:Notify({
                 Title = "Save Error",
@@ -169,12 +175,19 @@ function Labs:LoadConfig(silent)
     local success, result = pcall(function()
         local fullPath = Labs.ConfigFolder .. "/" .. Labs.ConfigFile
         
+        print("[Labs Config] Tentando carregar de:", fullPath)
+        
         if not isfile(fullPath) then
+            print("[Labs Config] ⚠️ Arquivo não existe ainda")
             return nil
         end
         
         local jsonData = readfile(fullPath)
-        return HttpService:JSONDecode(jsonData)
+        print("[Labs Config] Dados carregados:", jsonData)
+        
+        local decoded = HttpService:JSONDecode(jsonData)
+        print("[Labs Config] ✅ Config carregada com sucesso!")
+        return decoded
     end)
     
     if success and result then
@@ -188,6 +201,7 @@ function Labs:LoadConfig(silent)
         end
         return result
     else
+        print("[Labs Config] ❌ Erro ao carregar:", tostring(result))
         return nil
     end
 end
@@ -331,6 +345,8 @@ function Labs:SetTheme(themeName)
     
     currentColors = THEMES[themeName]
     activetheme = themeName
+    Labs.ActiveTheme = themeName
+    print("[Labs Theme] Tema alterado para:", themeName)
     
     task.spawn(function()
         for _, window in ipairs(Labs.Windows) do
