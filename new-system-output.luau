@@ -1848,6 +1848,108 @@ function Labs:AddParagraph(tab, config)
     return textBox
 end
 
+function Labs:AddInput(tab, config)
+    local inputSettings = {
+        Title = config.Title or "Input",
+        Placeholder = config.Placeholder or "Enter text...",
+        Default = config.Default or "",
+        Numeric = config.Numeric or false,
+        Finished = config.Finished or false,
+        Callback = config.Callback or function() end
+    }
+    
+    local inputContainer = Instance.new("Frame")
+    inputContainer.Size = UDim2.new(1, 0, 0, 70)
+    inputContainer.BackgroundColor3 = currentColors.CARD
+    inputContainer.BackgroundTransparency = 0.3
+    inputContainer.BorderSizePixel = 0
+    inputContainer.ZIndex = 2
+    inputContainer.Parent = tab.Page
+    
+    local containerCorner = Instance.new("UICorner")
+    containerCorner.CornerRadius = UDim.new(0, 10)
+    containerCorner.Parent = inputContainer
+    
+    local inputLabel = Instance.new("TextLabel")
+    inputLabel.Size = UDim2.new(1, -24, 0, 20)
+    inputLabel.Position = UDim2.new(0, 12, 0, 8)
+    inputLabel.BackgroundTransparency = 1
+    inputLabel.Text = inputSettings.Title
+    inputLabel.TextColor3 = currentColors.TEXT_PRIMARY
+    inputLabel.Font = Enum.Font.GothamBold
+    inputLabel.TextSize = 12
+    inputLabel.TextXAlignment = Enum.TextXAlignment.Left
+    inputLabel.ZIndex = 3
+    inputLabel.Parent = inputContainer
+    
+    local inputBox = Instance.new("TextBox")
+    inputBox.Size = UDim2.new(1, -24, 0, 32)
+    inputBox.Position = UDim2.new(0, 12, 0, 32)
+    inputBox.BackgroundColor3 = currentColors.SURFACE
+    inputBox.BackgroundTransparency = 0.2
+    inputBox.BorderSizePixel = 0
+    inputBox.Text = inputSettings.Default
+    inputBox.PlaceholderText = inputSettings.Placeholder
+    inputBox.TextColor3 = currentColors.TEXT_PRIMARY
+    inputBox.PlaceholderColor3 = currentColors.TEXT_SECONDARY
+    inputBox.Font = Enum.Font.Gotham
+    inputBox.TextSize = 11
+    inputBox.TextXAlignment = Enum.TextXAlignment.Left
+    inputBox.ClearTextOnFocus = false
+    inputBox.ZIndex = 3
+    inputBox.Parent = inputContainer
+    
+    local inputBoxCorner = Instance.new("UICorner")
+    inputBoxCorner.CornerRadius = UDim.new(0, 6)
+    inputBoxCorner.Parent = inputBox
+    
+    local inputPadding = Instance.new("UIPadding")
+    inputPadding.PaddingLeft = UDim.new(0, 8)
+    inputPadding.PaddingRight = UDim.new(0, 8)
+    inputPadding.Parent = inputBox
+    
+    if inputSettings.Numeric then
+        inputBox:GetPropertyChangedSignal("Text"):Connect(function()
+            inputBox.Text = inputBox.Text:gsub("[^%d]", "")
+        end)
+    end
+    
+    inputBox.Focused:Connect(function()
+        animate(inputBox, {BackgroundTransparency = 0.05}, 0.2)
+        animate(inputContainer, {BackgroundTransparency = 0.1}, 0.2)
+    end)
+    
+    inputBox.FocusLost:Connect(function(enterPressed)
+        animate(inputBox, {BackgroundTransparency = 0.2}, 0.2)
+        animate(inputContainer, {BackgroundTransparency = 0.3}, 0.2)
+        
+        if inputSettings.Finished then
+            if enterPressed then
+                pcall(inputSettings.Callback, inputBox.Text)
+            end
+        else
+            pcall(inputSettings.Callback, inputBox.Text)
+        end
+    end)
+    
+    if not inputSettings.Finished then
+        inputBox:GetPropertyChangedSignal("Text"):Connect(function()
+            pcall(inputSettings.Callback, inputBox.Text)
+        end)
+    end
+    
+    return {
+        Container = inputContainer,
+        TextBox = inputBox,
+        SetValue = function(value)
+            inputBox.Text = tostring(value)
+        end,
+        GetValue = function()
+            return inputBox.Text
+        end
+    }
+end
+
 function Labs:AddKeybind(tab, config)
     local keybindSettings = {
         Title = config.Title or "Keybind",
