@@ -1816,8 +1816,11 @@ function Labs:AddParagraph(tab, config)
     textBox.ZIndex = 2
     textBox.Parent = tab.Page
     
+    local heading = nil
+    local body = nil
+    
     if textSettings.Title ~= "" then
-        local heading = Instance.new("TextLabel")
+        heading = Instance.new("TextLabel")
         heading.Size = UDim2.new(1, 0, 0, 20)
         heading.BackgroundTransparency = 1
         heading.Text = textSettings.Title
@@ -1830,7 +1833,7 @@ function Labs:AddParagraph(tab, config)
     end
     
     if textSettings.Content ~= "" then
-        local body = Instance.new("TextLabel")
+        body = Instance.new("TextLabel")
         body.Size = UDim2.new(1, 0, 0, 0)
         body.AutomaticSize = Enum.AutomaticSize.Y
         body.Position = UDim2.new(0, 0, 0, textSettings.Title ~= "" and 22 or 0)
@@ -1845,7 +1848,56 @@ function Labs:AddParagraph(tab, config)
         body.Parent = textBox
     end
     
-    return textBox
+    return {
+        Container = textBox,
+        TitleLabel = heading,
+        ContentLabel = body,
+        SetTitle = function(newTitle)
+            if heading then
+                heading.Text = newTitle
+            else
+                heading = Instance.new("TextLabel")
+                heading.Size = UDim2.new(1, 0, 0, 20)
+                heading.BackgroundTransparency = 1
+                heading.Text = newTitle
+                heading.TextColor3 = currentColors.TEXT_PRIMARY
+                heading.Font = Enum.Font.GothamBold
+                heading.TextSize = 13
+                heading.TextXAlignment = Enum.TextXAlignment.Left
+                heading.ZIndex = 3
+                heading.Parent = textBox
+                
+                if body then
+                    body.Position = UDim2.new(0, 0, 0, 22)
+                end
+            end
+        end,
+        SetContent = function(newContent)
+            if body then
+                body.Text = newContent
+            else
+                body = Instance.new("TextLabel")
+                body.Size = UDim2.new(1, 0, 0, 0)
+                body.AutomaticSize = Enum.AutomaticSize.Y
+                body.Position = UDim2.new(0, 0, 0, heading and 22 or 0)
+                body.BackgroundTransparency = 1
+                body.Text = newContent
+                body.TextColor3 = currentColors.TEXT_SECONDARY
+                body.Font = Enum.Font.Gotham
+                body.TextSize = 12
+                body.TextXAlignment = Enum.TextXAlignment.Left
+                body.TextWrapped = true
+                body.ZIndex = 3
+                body.Parent = textBox
+            end
+        end,
+        GetTitle = function()
+            return heading and heading.Text or ""
+        end,
+        GetContent = function()
+            return body and body.Text or ""
+        end
+    }
 end
 
 function Labs:AddInput(tab, config)
